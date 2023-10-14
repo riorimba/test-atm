@@ -98,6 +98,14 @@ void hidePin(string& pin) {
         hidePin(pin);
     }
 }
+User* findUserByNorek(const string& norek) {
+    for (int i = 0; i < userCount; ++i) {
+        if (users[i].norek == norek) {
+            return &users[i]; // Mengembalikan alamat memori objek User yang sesuai dengan nomor rekening
+        }
+    }
+    return nullptr; // Mengembalikan nullptr jika pengguna tidak ditemukan
+}
 
 //register login
 void registerUser() {
@@ -114,6 +122,7 @@ void registerUser() {
             users[userCount].norek = norek;
             users[userCount].pin = pin;
             users[userCount].role = "user"; // Default role is user
+            users[userCount].saldo = 1000000; // Default saldo is 1.000.000
             userCount++;
             cout << "User Berhasil di daftarkan!" << endl;
         }
@@ -125,9 +134,20 @@ void registerUser() {
         cout << "norek tidak valid atau sudah terdaftar. Norek harus berupa angka 10 digit dan unik." << endl;
     }
 }
-bool loginUser(string norek, string pin, string& role) {
+
+//User* loginUser(const string& norek, const string& pin) {
+//    for (int i = 0; i < userCount; ++i) {
+//        if (users[i].norek == norek && users[i].pin == pin) {
+//            return &users[i]; // Mengembalikan alamat memori dari pengguna yang berhasil login
+//        }
+//    }
+//    return nullptr; // Mengembalikan nullptr jika login gagal
+//}
+
+bool loginUser(const string& norek, const string& pin, int& saldo, string& role) {
     for (int i = 0; i < userCount; ++i) {
         if (users[i].norek == norek && users[i].pin == pin) {
+            saldo = users[i].saldo;
             role = users[i].role;
             return true;
         }
@@ -135,29 +155,30 @@ bool loginUser(string norek, string pin, string& role) {
     return false;
 }
 
+
 //dashboard admin
 void adminDashboard() {
-
+    cout << "Selamat datang di dashboard admin!" << endl;
 };
 
 //dashboard user
-void showBalance(saldo) {
-    cout << "Saldo Anda: " << user.saldo << " IDR" << endl;
+void showBalance(int& saldo) {
+    cout << "Saldo Anda: " << saldo << " IDR" << endl;
 }
-void withdrawMoney(saldo) {
+void withdrawMoney(int& saldo) {
     int amount;
     cout << "Masukkan jumlah uang yang ingin ditarik: ";
     cin >> amount;
 
-    if (amount > 0 && amount <= user.saldo) {
-        user.saldo -= amount;
-        cout << "Penarikan berhasil. Saldo Anda sekarang: " << user.saldo << " IDR" << endl;
+    if (amount > 0 && amount <= saldo) {
+        saldo -= amount;
+        cout << "Penarikan berhasil. Saldo Anda sekarang: " << saldo << " IDR" << endl;
     }
     else {
         cout << "Jumlah uang tidak valid atau saldo tidak mencukupi." << endl;
     }
 }
-void transferMoney(saldo) {
+void transferMoney(User& user) {
 	string norek;
 	int amount;
 	cout << "Masukkan nomor rekening tujuan: ";
@@ -186,7 +207,7 @@ void transferMoney(saldo) {
 		cout << "Nomor rekening tidak valid." << endl;
 	}
 }   
-void userDashboard(saldo) {
+void userDashboard(int& saldo, const string& norek) {
     int choice;
 
     while (true) {
@@ -207,7 +228,7 @@ void userDashboard(saldo) {
             withdrawMoney(saldo);
             break;
         case 3:
-            transferMoney(saldo);
+            //transferMoney(user);
             break;
         case 4:
             cout << "Kembali ke menu awal!\n";
@@ -220,10 +241,12 @@ void userDashboard(saldo) {
 
 int main() {
     string norek, pin, role;
-    int choice, saldo;
+    int choice, saldo = 0;
+    //User user;
 
     blueprintUserAdmin();
-
+    //User* user;
+    User currentUser;
 
     do {
         cout << "1. Register\n2. Login\n3. Exit\n";
@@ -240,7 +263,7 @@ int main() {
             cout << "Masukkan pin: ";
             hidePin(pin);
 
-            if (loginUser(norek, pin, role)) {
+            if (loginUser(norek, pin, saldo, role)) {
                 if (role == "admin") {
                     cout << "\nBerhasil login sebagai ADMIN! Selamat datang, " << norek << "!" << endl;
                     adminDashboard();
@@ -248,7 +271,8 @@ int main() {
                 }
                 else {
                     cout << "\nBerhasil Login! Selamat Datang, " << norek << "!" << endl;
-                    userDashboard(saldo);
+                    //cout << saldo << endl;
+                    userDashboard(saldo, norek);
                     // Tampilkan tampilan khusus pengguna di sini
                 }
             }
