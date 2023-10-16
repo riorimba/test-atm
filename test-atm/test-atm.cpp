@@ -6,6 +6,7 @@
 
 using namespace std;
 
+// User struct
 struct User {
     string norek;
     string pin;
@@ -13,6 +14,7 @@ struct User {
     string role;
 };
 
+// Global variables
 const int MAX_USERS = 100;
 User users[MAX_USERS];
 int userCount = 3;
@@ -105,8 +107,8 @@ void registerUser() {
         if (userCount < MAX_USERS) {
             users[userCount].norek = norek;
             users[userCount].pin = pin;
-            users[userCount].role = "user"; // Default role is user
-            users[userCount].saldo = 1000000; // Default saldo is 1.000.000
+            users[userCount].role = "user"; // Default role 'user'
+            users[userCount].saldo = 1000000; // Default saldo 1.000.000
             userCount++;
             cout << "User Berhasil di daftarkan!" << endl;
         }
@@ -241,7 +243,7 @@ void deleteUserByNorek() {
 void adminDashboard() {
     int choice;
     do {
-        cout << "=== DASHBOARD ADMIN ===" << endl;
+        cout << "\n=== DASHBOARD ADMIN ===" << endl;
         cout << "1. Daftarkan Nasabah/Admin" << endl;
         cout << "2. Edit Nasabah" << endl;
         cout << "3. Hapus Akun Nasabah" << endl;
@@ -273,16 +275,17 @@ void adminDashboard() {
 
 //dashboard user
 void showBalance(User& currentUser) {
-    cout << "Saldo Anda: " << currentUser.saldo << " IDR" << endl;
+    cout << "Saldo Anda: IDR. " << currentUser.saldo << endl;
 }
 void withdrawMoney(User& currentUser) {
-    int amount;
-    cout << "Masukkan jumlah uang yang ingin ditarik: ";
-    cin >> amount;
+    int tarik;
 
-    if (amount > 0 && amount <= currentUser.saldo) {
-        currentUser.saldo -= amount;
-        cout << "Penarikan berhasil. Saldo Anda sekarang: " << currentUser.saldo << " IDR" << endl;
+    cout << "Masukkan jumlah uang yang ingin ditarik: ";
+    cin >> tarik;
+
+    if (tarik > 0 && tarik <= currentUser.saldo) {
+        currentUser.saldo -= tarik;
+        cout << "Penarikan berhasil. Saldo Anda sekarang: IDR. " << currentUser.saldo << endl;
     }
     else {
         cout << "Jumlah uang tidak valid atau saldo tidak mencukupi." << endl;
@@ -297,7 +300,7 @@ void withdrawMoney(User& currentUser) {
 }
 void transferMoney(User& user) {
     string norek;
-    int amount;
+    int transfer;
 
     cout << "Masukkan nomor rekening tujuan: ";
     cin >> norek;
@@ -307,34 +310,35 @@ void transferMoney(User& user) {
         return;
     }
 
-    cout << "Masukkan jumlah uang yang ingin ditransfer: ";
-    while (!(cin >> amount) || amount <= 0) {
+    cout << "Masukkan jumlah uang yang ingin ditransfer: IDR. ";
+    while (!(cin >> transfer) || transfer <= 0) {
         cout << "Jumlah uang yang dimasukkan tidak valid. Silakan coba lagi: ";
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 
-    if (amount > user.saldo) {
+    if (transfer > user.saldo) {
         cout << "Saldo tidak mencukupi untuk melakukan transfer sebesar itu." << endl;
         return;
     }
 
     for (int i = 0; i < userCount; ++i) {
         if (users[i].norek == norek) {
-            users[i].saldo += amount;
-            user.saldo -= amount;
-            cout << "Transfer berhasil. Saldo Anda sekarang: " << user.saldo << " IDR" << endl;
+            users[i].saldo += transfer;
+            user.saldo -= transfer;
+            cout << "Transfer berhasil ke norek " << norek << endl;
+            cout << " Saldo Anda sekarang : IDR. " << user.saldo << endl; 
             return;
         }
     }
 
     cout << "Nomor rekening tujuan tidak ditemukan." << endl;
 }
-void userDashboard(const string& norek, User& currentUser) {
+void userDashboard(User& currentUser) {
     int choice;
 
     while (true) {
-        cout << "=== DASHBOARD USER ===\n";
+        cout << "\n=== DASHBOARD USER ===\n";
         cout << "Menu Transaksi: \n";
         cout << "1. Tampilkan saldo\n";
         cout << "2. Tarik Tunai\n";
@@ -376,7 +380,7 @@ int main() {
     User currentUser;
 
     do {
-        cout << "=== ATM ===" << endl;
+        cout << "\n=== ATM ===" << endl;
         cout << "1. Register\n2. Login\n3. Exit\n";
         cout << "Pilih Opsi: ";
         cin >> choice;
@@ -400,7 +404,7 @@ int main() {
                 else {
                     cout << "\nBerhasil Login! Selamat Datang, " << norek << "!" << endl;
                     //dashboard user
-                    userDashboard(norek, currentUser);
+                    userDashboard(currentUser);
                 }
             }
             else {
