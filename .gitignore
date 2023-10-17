@@ -3,10 +3,6 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-.test-atm.sln
-test-atm\test-atm.vcxproj
-test-atm\test-atm.vcxproj.filters
-
 # User-specific files
 *.rsuser
 *.suo
