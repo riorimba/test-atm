@@ -12,12 +12,13 @@ struct User {
     string pin;
     int saldo = 0;
     string role;
+    string status;
 };
 
 // Global variables
 const int MAX_USERS = 100;
 User users[MAX_USERS];
-int userCount = 3;
+int userCount = 4;
 bool isNumeric = true;
 
 //test akun
@@ -26,16 +27,25 @@ void blueprintUserAndAdmin() {
     users[0].pin = "123456";
     users[0].saldo = 1000000;
     users[0].role = "admin";
+    users[0].status = "aktif";
 
     users[1].norek = "1234567891";
     users[1].pin = "123456";
     users[1].saldo = 1000000;
     users[1].role = "user";
+    users[1].status = "aktif";
 
     users[2].norek = "1234567892";
     users[2].pin = "123456";
     users[2].saldo = 1000000;
     users[2].role = "user";
+    users[2].status = "aktif";
+
+    users[3].norek = "1234567893";
+    users[3].pin = "123456";
+    users[3].saldo = 1000000;
+    users[3].role = "user";
+    users[3].status = "terblokir";
 }
 
 //Validasi
@@ -94,8 +104,10 @@ void hidePin(string& pin) {
 }
 
 //register login
+//1.otomatisasi norek register
+//2.3x salah login blokir
 void registerUser() {
-    string norek, pin;
+    string norek, pin, status;
 
     cout << "Masukkan norek (10 digit angka): ";
     cin >> norek;
@@ -109,6 +121,7 @@ void registerUser() {
             users[userCount].pin = pin;
             users[userCount].role = "user"; // Default role 'user'
             users[userCount].saldo = 1000000; // Default saldo 1.000.000
+            users[userCount].status = "aktif"; // Default status 'aktif'
             userCount++;
             cout << "User Berhasil di daftarkan!" << endl;
         }
@@ -123,12 +136,16 @@ void registerUser() {
 bool loginUser(const string& norek, const string& pin, string& role, User& currentUser) {
     for (int i = 0; i < userCount; ++i) {
         if (users[i].norek == norek && users[i].pin == pin) {
-            /*saldo = users[i].saldo;*/
+            if (users[i].status == "terblokir") {
+                cout << "\nNorek diblokir. Hubungi admin untuk bantuan.\n";
+                return false;
+            }
             role = users[i].role;
             currentUser = users[i];
             return true;
         }
     }
+
     return false;
 }
 
@@ -275,8 +292,26 @@ void adminDashboard() {
 
 //dashboard user
 void showBalance(User& currentUser) {
-    cout << "Saldo Anda: IDR. " << currentUser.saldo << endl;
+    cout << "\nSaldo Anda: IDR. " << currentUser.saldo << endl;
 }
+void addMoney(User& currentUser) {
+    cout << "Masukkan jumlah uang yang ingin disetor: IDR. ";
+    int setor;
+    while (!(cin >> setor) || setor <= 0) {
+		cout << "Jumlah uang yang dimasukkan tidak valid. Silakan coba lagi: ";
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	}
+    currentUser.saldo += setor;
+	cout << "\nSetoran berhasil. Saldo Anda sekarang: IDR. " << currentUser.saldo << endl;
+    for (int i = 0; i < userCount; ++i) {
+        if (users[i].norek == currentUser.norek) {
+			users[i].saldo = currentUser.saldo;
+			break;
+		}
+	}
+	return;
+};
 void withdrawMoney(User& currentUser) {
     int tarik;
 
@@ -285,7 +320,7 @@ void withdrawMoney(User& currentUser) {
 
     if (tarik > 0 && tarik <= currentUser.saldo) {
         currentUser.saldo -= tarik;
-        cout << "Penarikan berhasil. Saldo Anda sekarang: IDR. " << currentUser.saldo << endl;
+        cout << "\nPenarikan berhasil. Saldo Anda sekarang: IDR. " << currentUser.saldo << endl;
     }
     else {
         cout << "Jumlah uang tidak valid atau saldo tidak mencukupi." << endl;
@@ -306,19 +341,19 @@ void transferMoney(User& user) {
     cin >> norek;
 
     if (!isValidNumericNorek(norek)) {
-        cout << "Nomor rekening tidak valid." << endl;
+        cout << "\nNomor rekening tidak valid." << endl;
         return;
     }
 
     cout << "Masukkan jumlah uang yang ingin ditransfer: IDR. ";
     while (!(cin >> transfer) || transfer <= 0) {
-        cout << "Jumlah uang yang dimasukkan tidak valid. Silakan coba lagi: ";
+        cout << "\nJumlah uang yang dimasukkan tidak valid. Silakan coba lagi: ";
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 
     if (transfer > user.saldo) {
-        cout << "Saldo tidak mencukupi untuk melakukan transfer sebesar itu." << endl;
+        cout << "\nSaldo tidak mencukupi untuk melakukan transfer sebesar itu." << endl;
         return;
     }
 
@@ -326,13 +361,13 @@ void transferMoney(User& user) {
         if (users[i].norek == norek) {
             users[i].saldo += transfer;
             user.saldo -= transfer;
-            cout << "Transfer berhasil ke norek " << norek << endl;
+            cout << "\nTransfer berhasil ke norek " << norek << endl;
             cout << " Saldo Anda sekarang : IDR. " << user.saldo << endl; 
             return;
         }
     }
 
-    cout << "Nomor rekening tujuan tidak ditemukan." << endl;
+    cout << "\nNomor rekening tujuan tidak ditemukan." << endl;
 }
 void userDashboard(User& currentUser) {
     int choice;
@@ -341,9 +376,10 @@ void userDashboard(User& currentUser) {
         cout << "\n=== DASHBOARD USER ===\n";
         cout << "Menu Transaksi: \n";
         cout << "1. Tampilkan saldo\n";
-        cout << "2. Tarik Tunai\n";
-        cout << "3. Transfer\n";
-        cout << "4. Kembali ke menu utama\n";
+        cout << "2. Setor tunai\n";
+        cout << "3. Tarik tunai\n";
+        cout << "4. Transfer\n";
+        cout << "5. Kembali ke menu utama\n";
         cout << "Pilih: ";
         cin >> choice;
 
@@ -352,12 +388,15 @@ void userDashboard(User& currentUser) {
             showBalance(currentUser);
             break;
         case 2:
-            withdrawMoney(currentUser);
+            addMoney(currentUser);
             break;
         case 3:
-            transferMoney(currentUser);
+            withdrawMoney(currentUser);
             break;
         case 4:
+            transferMoney(currentUser);
+            break;
+        case 5:
             for (int i = 0; i < userCount; ++i) {
                 if (users[i].norek == currentUser.norek) {
                     users[i].saldo = currentUser.saldo;
@@ -366,7 +405,7 @@ void userDashboard(User& currentUser) {
             }
             return;
         default:
-            cout << "Pilihan tidak valid. Silakan coba lagi.\n";
+            cout << "\nPilihan tidak valid. Silakan coba lagi.\n";
         }
     }
 };
@@ -378,6 +417,8 @@ int main() {
 
     blueprintUserAndAdmin();
     User currentUser;
+    int loginAttempts = 0;
+    const int MAX_LOGIN_ATTEMPTS = 3;
 
     do {
         cout << "\n=== ATM ===" << endl;
@@ -390,32 +431,32 @@ int main() {
             registerUser();
             break;
         case 2:
-            cout << "Masukkan norek: ";
-            cin >> norek;
-            cout << "Masukkan pin: ";
-            hidePin(pin);
+                cout << "Masukkan norek: ";
+                cin >> norek;
+                cout << "Masukkan pin: ";
+                hidePin(pin);
 
-            if (loginUser(norek, pin, role, currentUser)) {
-                if (role == "admin") {
-                    cout << "\nBerhasil login sebagai ADMIN! Selamat datang, " << norek << "!" << endl;
-                    //dashboard admin
-                    adminDashboard();
+                if (loginUser(norek, pin, role, currentUser)) {
+                    if (role == "admin") {
+                        cout << "\nBerhasil login sebagai ADMIN! Selamat datang, " << norek << "!" << endl;
+                        //dashboard admin
+                        adminDashboard();
+                    }
+                    else {
+                        cout << "\nBerhasil Login! Selamat Datang, " << norek << "!" << endl;
+                        //dashboard user
+                        userDashboard(currentUser);
+                    }
                 }
                 else {
-                    cout << "\nBerhasil Login! Selamat Datang, " << norek << "!" << endl;
-                    //dashboard user
-                    userDashboard(currentUser);
-                }
-            }
-            else {
-                cout << "\nNorek atau Password tidak valid. Silahkan coba lagi." << endl;
-            }
+                    cout << "\nNorek atau Password tidak valid. Silahkan coba lagi." << endl;
+
             break;
         case 3:
-            cout << "Keluar dari program. Selamat Tinggal!" << endl;
+            cout << "\nKeluar dari program. Selamat Tinggal!" << endl;
             break;
         default:
-            cout << "Kesalahan pemilihan. Coba lagi." << endl;
+            cout << "\nKesalahan pemilihan. Coba lagi." << endl;
         }
     } while (choice != 3);
 
