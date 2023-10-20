@@ -379,7 +379,7 @@ void userDashboard(User& currentUser) {
         cout << "2. Setor tunai\n";
         cout << "3. Tarik tunai\n";
         cout << "4. Transfer\n";
-        cout << "5. Kembali ke menu utama\n";
+        cout << "5. Logout\n";
         cout << "Pilih: ";
         cin >> choice;
 
@@ -397,6 +397,7 @@ void userDashboard(User& currentUser) {
             transferMoney(currentUser);
             break;
         case 5:
+            cout << "\nKeluar dari Dashboard User." << endl;
             for (int i = 0; i < userCount; ++i) {
                 if (users[i].norek == currentUser.norek) {
                     users[i].saldo = currentUser.saldo;
@@ -450,7 +451,7 @@ int main() {
                 }
                 else {
                     cout << "\nNorek atau Password tidak valid. Silahkan coba lagi." << endl;
-
+                }
             break;
         case 3:
             cout << "\nKeluar dari program. Selamat Tinggal!" << endl;
