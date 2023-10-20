@@ -13,13 +13,13 @@ struct User {
     int saldo = 0;
     string role;
     string status;
+    int loginAttempts = 0;
 };
 
 // Global variables
 const int MAX_USERS = 100;
 User users[MAX_USERS];
 int userCount = 4;
-bool isNumeric = true;
 
 //test akun
 void blueprintUserAndAdmin() {
@@ -105,10 +105,10 @@ void hidePin(string& pin) {
 
 //register login
 //1.otomatisasi norek register
-//2.3x salah login blokir
 void registerUser() {
     string norek, pin, status;
 
+    cout << "\n== REGISTER ==\n";
     cout << "Masukkan norek (10 digit angka): ";
     cin >> norek;
 
@@ -122,6 +122,7 @@ void registerUser() {
             users[userCount].role = "user"; // Default role 'user'
             users[userCount].saldo = 1000000; // Default saldo 1.000.000
             users[userCount].status = "aktif"; // Default status 'aktif'
+            users[userCount].loginAttempts = 0; // Default login attempts 0
             userCount++;
             cout << "User Berhasil di daftarkan!" << endl;
         }
@@ -139,17 +140,37 @@ bool loginUser(const string& norek, const string& pin, string& role, User& curre
             if (users[i].status == "terblokir") {
                 cout << "\nNorek diblokir. Hubungi admin untuk bantuan.\n";
                 return false;
+                break;
             }
             role = users[i].role;
             currentUser = users[i];
             return true;
         }
     }
-
     return false;
 }
 
 //dashboard admin
+void detailUser() {
+    string norek;
+    cout << "Masukkan nomor rekening pengguna yang dicari: ";
+    cin >> norek;
+
+    // Mencari pengguna berdasarkan nomor rekening
+    for (int i = 0; i < userCount; ++i) {
+        if (users[i].norek == norek) {
+            cout << "\n=== Detail Pengguna ===" << endl;
+            cout << "Nomor Rekening: " << users[i].norek << endl;
+            cout << "Saldo: " << users[i].saldo << " IDR" << endl;
+            cout << "Role: " << users[i].role << endl;
+            cout << "Status: " << users[i].status << endl;
+            return;
+        }
+    }
+
+    // Menampilkan pesan jika pengguna tidak ditemukan
+    cout << "\nPengguna dengan nomor rekening " << norek << " tidak ditemukan." << endl;
+}
 void registerUserByAdmin() {
     string norek, pin, role;
     int saldo;
@@ -176,7 +197,9 @@ void registerUserByAdmin() {
             users[userCount].norek = norek;
             users[userCount].pin = pin;
             users[userCount].role = role; 
-            users[userCount].saldo = saldo; 
+            users[userCount].saldo = saldo;
+            users[userCount].status = "aktif";
+            users[userCount].loginAttempts = 0;
             userCount++;
             cout << "User Berhasil di daftarkan!" << endl;
         }
@@ -197,8 +220,7 @@ void editUserByNorek() {
     for (int i = 0; i < userCount; ++i) {
         if (users[i].norek == norek) {
             // Meminta input baru dari pengguna
-            string newNorek, newPin, newRole;
-            int newSaldo;
+            string newNorek, newPin, newRole, newStatus;
 
             cout << "Masukkan nomor rekening baru: ";
             cin >> newNorek;
@@ -209,14 +231,14 @@ void editUserByNorek() {
                 hidePin(newPin);
                 cout << "Masukkan role baru (admin/user): ";
                 cin >> newRole;
-                cout << "Masukkan saldo baru: ";
-                cin >> newSaldo;
+                cout << "Masukkan Status (aktif/terblokir): ";
+                cin >> newStatus;
 
                 // Mengganti informasi pengguna dengan informasi baru
                 users[i].norek = newNorek;
                 users[i].pin = newPin;
                 users[i].role = newRole;
-                users[i].saldo = newSaldo;
+                users[i].status = newStatus;
 
                 cout << "Informasi pengguna berhasil diubah." << endl;
                 return;
@@ -261,24 +283,28 @@ void adminDashboard() {
     int choice;
     do {
         cout << "\n=== DASHBOARD ADMIN ===" << endl;
-        cout << "1. Daftarkan Nasabah/Admin" << endl;
-        cout << "2. Edit Nasabah" << endl;
-        cout << "3. Hapus Akun Nasabah" << endl;
-        cout << "4. Keluar" << endl;
+        cout << "1. Detail User" << endl;
+        cout << "2. Daftarkan Nasabah/Admin" << endl;
+        cout << "3. Edit Nasabah" << endl;
+        cout << "4. Hapus Akun Nasabah" << endl;
+        cout << "5. Kembali ke menu" << endl;
         cout << "Pilih opsi : ";
         cin >> choice;
 
         switch (choice) {
         case 1:
-            registerUserByAdmin();
+            detailUser();
             break;
         case 2:
-             editUserByNorek();
+            registerUserByAdmin();
             break;
         case 3:
-             deleteUserByNorek();
+             editUserByNorek();
             break;
         case 4:
+             deleteUserByNorek();
+            break;
+        case 5:
             cout << "Keluar dari Dashboard Admin." << endl;
             break;
         default:
@@ -370,6 +396,7 @@ void transferMoney(User& user) {
     cout << "\nNomor rekening tujuan tidak ditemukan." << endl;
 }
 void userDashboard(User& currentUser) {
+    currentUser.loginAttempts = 0;
     int choice;
 
     while (true) {
@@ -418,8 +445,8 @@ int main() {
 
     blueprintUserAndAdmin();
     User currentUser;
-    int loginAttempts = 0;
     const int MAX_LOGIN_ATTEMPTS = 3;
+
 
     do {
         cout << "\n=== ATM ===" << endl;
@@ -432,6 +459,8 @@ int main() {
             registerUser();
             break;
         case 2:
+            do {
+                cout << "\n=== LOGIN ===" << endl;
                 cout << "Masukkan norek: ";
                 cin >> norek;
                 cout << "Masukkan pin: ";
@@ -450,8 +479,23 @@ int main() {
                     }
                 }
                 else {
-                    cout << "\nNorek atau Password tidak valid. Silahkan coba lagi." << endl;
+                    currentUser.loginAttempts++;
+                    if (currentUser.loginAttempts >= MAX_LOGIN_ATTEMPTS) {                  
+                        cout << "\nAkun Anda telah terblokir setelah 3x upaya login gagal.\n";
+                        for (int i = 0; i < userCount; ++i) {
+                            if (users[i].norek == norek) {
+                                users[i].status = "terblokir";
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        int remainingAttempts = MAX_LOGIN_ATTEMPTS - currentUser.loginAttempts;
+                        cout << "\nNorek atau Password tidak valid. Silahkan coba lagi. Sisa percobaan: " << remainingAttempts << endl;
+                    }
                 }
+            } while (currentUser.status != "terblokir");
+                
             break;
         case 3:
             cout << "\nKeluar dari program. Selamat Tinggal!" << endl;
