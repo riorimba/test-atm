@@ -395,6 +395,38 @@ void transferMoney(User& user) {
 
     cout << "\nNomor rekening tujuan tidak ditemukan." << endl;
 }
+void userBlock(User& user) {
+    string pin, confirmPin;
+    cout << "Masukkan pin norek untuk memblokir norek\n";
+    cout << "Masukkan pin: ";
+    hidePin(pin);
+    cout << "KONFIRMASI PEMBLOKIRAN, Massukkan pin: ";
+    hidePin(confirmPin);
+
+    if (pin == user.pin && confirmPin == user.pin) {
+		user.status = "terblokir";
+		cout << "Norek berhasil diblokir." << endl;
+	}
+    else {
+		cout << "Pin dan Konfirmasi tidak cocok. Norek tidak diblokir." << endl;
+	}
+}
+void changePin(User& currentUser) {
+	string newPin,confirmPin;
+	cout << "Masukkan pin baru: ";
+	hidePin(newPin);
+    cout << "Konfirmasi pin baru: ";
+    hidePin(confirmPin);
+
+    if (newPin == confirmPin) {
+        currentUser.pin = newPin;
+        cout << "Pin berhasil diubah." << endl;
+    }
+    else {
+		cout << "Pin dan Konfirmasi tidak cocok. Pin tidak diubah." << endl;
+	}
+	
+}
 void userDashboard(User& currentUser) {
     currentUser.loginAttempts = 0;
     int choice;
@@ -406,7 +438,9 @@ void userDashboard(User& currentUser) {
         cout << "2. Setor tunai\n";
         cout << "3. Tarik tunai\n";
         cout << "4. Transfer\n";
-        cout << "5. Logout\n";
+        cout << "5. Ganti pin\n";
+        cout << "6. Blokir akun\n";
+        cout << "7. Logout\n";
         cout << "Pilih: ";
         cin >> choice;
 
@@ -424,10 +458,17 @@ void userDashboard(User& currentUser) {
             transferMoney(currentUser);
             break;
         case 5:
+            changePin(currentUser);
+            break;
+        case 6:
+            userBlock(currentUser);
+        case 7:
             cout << "\nKeluar dari Dashboard User." << endl;
             for (int i = 0; i < userCount; ++i) {
                 if (users[i].norek == currentUser.norek) {
                     users[i].saldo = currentUser.saldo;
+                    users[i].pin = currentUser.pin;
+                    users[i].status = currentUser.status;
                     break;
                 }
             }
@@ -437,6 +478,7 @@ void userDashboard(User& currentUser) {
         }
     }
 };
+
 
 int main() {
     string norek, pin, role;

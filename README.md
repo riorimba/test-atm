@@ -21,7 +21,10 @@ jangan segan-segan untuk melaporkan bug
   - setor tunai
   - tarik tunai
   - transfer
+  - ganti pin
+  - blokir akun
 * Admin dashboard
+  - lihat detail norek
   - register manual
   - edit user
   - hapus user
