@@ -30,4 +30,6 @@ jangan segan-segan untuk melaporkan bug
   - hapus user
 
 ## fitur mendatang
+* menambahkan nama  pada struct
+* enkripsi pada password
 * AutoIncrement saat register norek
